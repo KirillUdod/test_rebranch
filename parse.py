@@ -1,14 +1,10 @@
 import sys
 import requests
-import datetime
 import json
 import yaml
 
 from lxml import html
 from PyQt5.QtWidgets import QMainWindow, QLabel, QComboBox, QApplication, QPushButton, QTextEdit
-from datetime import date, timedelta
-
-
 
 _SECTIONS_REF = {
     'За сутки': '/top/',
@@ -40,11 +36,12 @@ class Parser(object):
         elif format[-4:] == ".yml":
             with open("text.yml", mode='w', encoding='utf-8') as f:
                 yaml.dump([], f)
+        result = ''
 
         while True:
             response = requests.get(refer)
             parsed_body = html.fromstring(response.text)
-            result = ''
+
             for post in parsed_body.cssselect('div.post'):
 
                 hubs = ''
@@ -67,16 +64,8 @@ class Parser(object):
                 for i in post.cssselect('span.score'):
                     post_rating = i.text_content()
 
-                post_date = ''
-                for i in post.cssselect('published'):
-                    date = i.text_content()
-                    t = datetime
-                    if date.find('вчера'):
-                        t.date.day = date.today() - timedelta(1)
-                    elif date.find('сегодня'):
-                        t.date.day = date.today()
-                    # else:
-                    #     t.date.day =
+                for i in post.cssselect('div.published'):
+                    post_date = i.text_content()
 
                 result += post_title + '\n' + post_date + '\n' + hubs[:-2] + '\n' + name_author + '\n' + post_rating \
                           + '\n\n'
@@ -96,23 +85,23 @@ class Parser(object):
                 f = json.load(feedsjson)
             with open(file_name, "w+") as outfile:
                 f.append({'name': n,
-                           'publication_date': d,
-                           'tags': t,
-                           'author': a,
-                           'rating': r,
-                           'url': u
-                           })
+                          'publication_date': d,
+                          'tags': t,
+                          'author': a,
+                          'rating': r,
+                          'url': u
+                          })
                 json.dump(f, outfile, indent=4)
         elif file_name[-4:] == ".yml":
             with open(file_name, mode='r', encoding='utf-8') as feeds:
                 f = yaml.load(feeds)
                 f.append({'name': n,
-                           'publication_date': d,
-                           'tags': t,
-                           'author': a,
-                           'rating': r,
-                           'url': u
-                           })
+                          'publication_date': d,
+                          'tags': t,
+                          'author': a,
+                          'rating': r,
+                          'url': u
+                          })
             with open(file_name, 'w+') as outfile:
                 outfile.write(yaml.dump(f, default_flow_style=True))
 
@@ -208,6 +197,4 @@ if __name__ == "__main__":
     ex = MenuWindow()
     sys.exit(app.exec_())
 
-    #site_refer = ""
-    #pars = Parser(site_refer)
 
